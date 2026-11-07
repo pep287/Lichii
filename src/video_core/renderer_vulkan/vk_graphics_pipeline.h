@@ -75,6 +75,9 @@ class RescalingPushConstant;
 class RenderAreaPushConstant;
 class Scheduler;
 
+/// Ends a frame of the EDEN_NX2_DRAW_REUSE_PROBE counters; called once per frame by the rasterizer.
+void NoteDrawReuseProbeFrame();
+
 class GraphicsPipeline {
     static constexpr size_t NUM_STAGES = Tegra::Engines::Maxwell3D::Regs::MaxShaderStage;
 

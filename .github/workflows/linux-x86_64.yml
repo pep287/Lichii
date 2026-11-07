@@ -26,9 +26,10 @@ env:
   # release-binaries.yml.
   PGO_LLVM_VERSION: "23"
 
+# One run per commit; a new push does not cancel the build of an older one.
 concurrency:
-  group: linux-x86_64-${{ github.ref }}
-  cancel-in-progress: true
+  group: linux-x86_64-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -151,7 +152,8 @@ jobs:
       - name: Build
         run: |
           ccache --zero-stats
-          cmake --build build/release --target yuzu yuzu-cmd --parallel
+          # -k 0: keep going after a failed file so one run shows every compile error.
+          cmake --build build/release --target yuzu yuzu-cmd --parallel -- -k 0
           ccache --show-stats
 
       - name: Package tar.gz
