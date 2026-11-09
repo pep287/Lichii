@@ -1,15 +1,15 @@
 name: linux-x86_64
 
-# Linux x86-64 build of Frizti's Fritchii v5.3 (released for Windows only), with Discord Rich
+# Linux x86-64 build of Frizti's Fritchii v5.5 (released for Windows only), with Discord Rich
 # Presence compiled in. An AppImage and a tar.gz, built like
 # release-binaries.yml's linux-x86_64-pgo job: clang from apt.llvm.org with the repo's
 # eglantine.profdata (profile-guided optimization).
 on:
   push:
     branches:
-      - fritchii-v5.3-linux
+      - fritchii-v5.5-linux
     tags:
-      - "fritchii-v5.3-linux*"
+      - "fritchii-v5.5-linux*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -129,7 +129,7 @@ jobs:
             -DVulkanUtilityLibraries_FORCE_BUNDLED=ON
             # The updater looks for upstream build-N releases, which are not this fork's builds.
             -DENABLE_UPDATE_CHECKER=OFF
-            -DLICHII_BUILD_TAG=fritchii-v5.3
+            -DLICHII_BUILD_TAG=fritchii-v5.5
             -DLICHII_BUILD_PLATFORM=${{ matrix.suffix }}
             -DUSE_DISCORD_PRESENCE=ON
             -DUSE_CCACHE=ON
@@ -161,7 +161,7 @@ jobs:
           test -x build/release/bin/eden-cli
           strip build/release/bin/lichii build/release/bin/eden-cli
           mkdir -p out
-          tar -czf "out/Fritchii-v5.3-${{ matrix.suffix }}.tar.gz" -C build/release/bin lichii eden-cli
+          tar -czf "out/Fritchii-v5.5-${{ matrix.suffix }}.tar.gz" -C build/release/bin lichii eden-cli
           ls -la out
 
       - name: Package AppImage
@@ -180,8 +180,8 @@ jobs:
           export QMAKE="$QT_ROOT_DIR/bin/qmake"
           export EXTRA_QT_MODULES=waylandcompositor
           export EXTRA_PLATFORM_PLUGINS='libqwayland-egl.so;libqwayland-generic.so'
-          export LDAI_VERSION="fritchii-v5.3-${GITHUB_SHA::7}"
-          export LDAI_OUTPUT="out/Fritchii-v5.3-${{ matrix.suffix }}.AppImage"
+          export LDAI_VERSION="fritchii-v5.5-${GITHUB_SHA::7}"
+          export LDAI_OUTPUT="out/Fritchii-v5.5-${{ matrix.suffix }}.AppImage"
           export OUTPUT="$LDAI_OUTPUT"
           export ARCH=x86_64
           "$tools/linuxdeploy-x86_64.AppImage" --appdir AppDir \
@@ -197,7 +197,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Fritchii-v5.3-${{ matrix.suffix }}
+          name: Fritchii-v5.5-${{ matrix.suffix }}
           path: out/*
           if-no-files-found: error
           compression-level: 0
@@ -225,12 +225,12 @@ jobs:
           set -euo pipefail
           ls -la dist
           cat > notes.md <<'EOF'
-          Frizti's Fritchii v5.3 (1a7a3c03c) for Linux x86-64, with Discord Rich Presence compiled in. Built by GitHub Actions.
+          Frizti's Fritchii v5.5 (4012e5271) for Linux x86-64, with Discord Rich Presence compiled in. Built by GitHub Actions.
 
-          - `Fritchii-v5.3-linux-x86_64.AppImage`: self-contained (glibc 2.39+: Ubuntu 24.04, Fedora 40, Debian 13, Arch). `chmod +x` and run it.
+          - `Fritchii-v5.5-linux-x86_64.AppImage`: self-contained (glibc 2.39+: Ubuntu 24.04, Fedora 40, Debian 13, Arch). `chmod +x` and run it.
           - `.tar.gz`: just the two programs; needs Qt 6 and the usual libraries installed on the system.
 
           No keys, firmware or games are included: use your own.
           EOF
           gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" --title "Fritchii v5.3 for Linux ($TAG)" --notes-file notes.md
+            --target "$GITHUB_SHA" --title "Fritchii v5.5 for Linux ($TAG)" --notes-file notes.md
