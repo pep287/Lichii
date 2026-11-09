@@ -140,6 +140,22 @@ std::vector<FileSys::VirtualDir> OpenGameFiles(u64 title_id) {
     return g_game_files();
 }
 
+/// The recipes folder next to the executable. Common::FS::GetExeDirectory exists only on Windows;
+/// on Linux the executable is found through /proc/self/exe (inside an AppImage, its usr/bin).
+static std::filesystem::path ExeRecipesDirectory() {
+#ifdef _WIN32
+    return Common::FS::GetExeDirectory() / "recipes";
+#else
+    std::error_code error;
+#ifdef __linux__
+    if (auto exe = std::filesystem::read_symlink("/proc/self/exe", error); !error) {
+        return exe.parent_path() / "recipes";
+    }
+#endif
+    return {};
+#endif
+}
+
 std::filesystem::path PrecompiledPath(const std::filesystem::path& title_dir, u32 cache_version) {
     return title_dir / fmt::format("precompiled.fork-v{}.nx2prep", cache_version);
 }
@@ -151,7 +167,7 @@ std::optional<Recipe> FindRecipe(u64 title_id, const std::filesystem::path& titl
         forced != nullptr && *forced != '\0') {
         candidates.emplace_back(forced);
     }
-    for (const auto& folder : {title_dir, Common::FS::GetExeDirectory() / "recipes"}) {
+    for (const auto& folder : {title_dir, ExeRecipesDirectory()}) {
         std::error_code error;
         std::vector<std::filesystem::path> found;
         for (std::filesystem::directory_iterator it{folder, error}, end; !error && it != end;
@@ -201,7 +217,7 @@ std::filesystem::path EnsurePrecompiledFile(u64 title_id, const std::filesystem:
                      "Precompiled pipelines: no {} and no recipe for {:016X} (looked in {} and {})",
                      precompiled.filename().string(), title_id,
                      Common::FS::PathToUTF8String(title_dir),
-                     Common::FS::PathToUTF8String(Common::FS::GetExeDirectory() / "recipes"));
+                     Common::FS::PathToUTF8String(ExeRecipesDirectory()));
             return {};
         }
         return precompiled;
